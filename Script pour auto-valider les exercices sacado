@@ -1,0 +1,56 @@
+Script sacado
+
+⚠️Utiliser a ses propres risques⚠️
+
+Mettre le script dans:
+Le parcours choisi > Click droit entre les différents exercices > inspecter > console
+
+Le script ouvre ensuite une multitude de fenêtres sur votre browser, c’est pour passer la sécurité de saccade
+
+Après avoir attendu quelques minutes, le script aura fini, relancez la page pour avoir tout les exercices marqués comme faits avec un temps entre 2 et 5 minutes
+ ⚠️Vous êtes responsables de vos actions⚠️
+
+
+// Collect all exercise links
+const links = Array.from(document.querySelectorAll(".content_list .card_freeze a:not(.pull-right)")).map(a => a.href);
+
+console.log(`Found ${links.length} exercises.`);
+
+// Function to create a new tab and auto-validate + close
+const openAndValidate = (url) => {
+    const newTab = window.open(url, '_blank');
+    if (!newTab) {
+        console.error("Pop-up blocked! Allow pop-ups for this site.");
+        return;
+    }
+
+    // Poll until the tab has loaded jQuery
+    const interval = setInterval(() => {
+        try {
+            const $ = newTab.jQuery;
+            if (!$) return; // wait until jQuery is ready
+
+            // Stop polling
+            clearInterval(interval);
+
+            // Run the validation
+            $("#start_time")[0].value = Math.floor(Number($("#start_time").val().split(",")[0]) - (Math.random() * 4 + 2) * 60);
+            $('#numexo').val(parseInt($("#situation").val()) + 2);
+            $('#score').val(1);
+            $('#submit_button_relation').unbind();
+            $('#submit_button_relation').click();
+
+            console.log(`${url} ✅ Validated`);
+
+            // Close the tab after 1 second
+            setTimeout(() => newTab.close(), 1000);
+        } catch (e) {
+            // keep waiting if jQuery or elements are not ready
+        }
+    }, 500); // check every 0.5s
+};
+
+// Open each exercise with spacing to avoid overload
+links.forEach((link, idx) => {
+    setTimeout(() => openAndValidate(link), idx * 4000); // 4s apart
+});
